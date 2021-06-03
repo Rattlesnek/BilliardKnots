@@ -9,34 +9,34 @@ public class HideObjects : MonoBehaviour
 
     public List<Component> HiddenComponents = new List<Component>();
 
-    public List<string> HiddenVariables = new List<string>();
+    [SerializeField]
+    private List<string> hiddenVariables = new List<string>();
+    public List<string> HiddenVariables
+    {
+        get { return hiddenVariables; }
+        set
+        {
+            hiddenVariables = value;
+            RuntimeInspector.Regenerate();
+        }
+    }
     
     public RuntimeHierarchy RuntimeHierarchy;
 
     public RuntimeInspector RuntimeInspector;
-
-    public LissajousKnots lissKnots;
 
     // Start is called before the first frame update
     void Start()
     {
         RuntimeHierarchy.GameObjectFilter = GameObjectFilter;
         RuntimeInspector.ComponentFilter = ComponentFilter;
-        RuntimeInspector.VariableFilter = VariableFilterLiss;
+        RuntimeInspector.VariableFilter = VariableFilter;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (lissKnots.KnotType == KnotType.Lissajous)
-        {
-            RuntimeInspector.VariableFilter = VariableFilterLiss;
-        }
-        else
-        {
-            RuntimeInspector.VariableFilter = VariableFilterToric;
-            RuntimeInspector.Refresh();
-        }
+        
     }
 
     private bool GameObjectFilter(Transform transform)
@@ -58,17 +58,8 @@ public class HideObjects : MonoBehaviour
         components.RemoveAll(component => HiddenComponents.Contains(component));
     }
 
-    private bool VariableFilterLiss(string variableName)
+    private bool VariableFilter(string variableName)
     {
-        return true;
-    }
-
-    private bool VariableFilterToric(string variableName)
-    {
-        if (variableName == "UnityEngine.Vector3 Amplitude")
-        {
-            return false;
-        }
-        return false;
+        return ! HiddenVariables.Contains(variableName);
     }
 }

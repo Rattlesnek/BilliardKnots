@@ -418,7 +418,7 @@ namespace RuntimeInspectorNamespace
 				elements[i].Depth = Depth + 1;
 		}
 
-		protected void RegenerateElements()
+		public void RegenerateElements()
 		{
 			if( elements.Count > 0 || exposedMethods.Count > 0 )
 				ClearElements();

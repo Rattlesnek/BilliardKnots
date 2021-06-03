@@ -407,6 +407,17 @@ namespace RuntimeInspectorNamespace
 			}
 		}
 
+		public void Regenerate()
+        {
+			if (IsBound)
+			{
+				if (currentDrawer != null && currentDrawer is ExpandableInspectorField)
+				{
+					((ExpandableInspectorField)currentDrawer).RegenerateElements();
+				}
+			}
+		}
+
 		// Refreshes the Inspector in the next Update. Called by most of the InspectorDrawers
 		// when their values have changed. If a drawer is bound to a property whose setter
 		// may modify the input data (e.g. when input data is 20 but the setter clamps it to 10),
