@@ -55,6 +55,7 @@ MonoBehaviour:
     m_variables:
     - name
     - tag
+    - enabled
   - m_type: Collider
     m_variables:
     - material

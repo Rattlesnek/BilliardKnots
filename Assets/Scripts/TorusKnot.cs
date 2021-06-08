@@ -3,20 +3,61 @@ using SplineMesh;
 
 public class TorusKnot : BaseKnot
 {
-    public int P;
-
-    public int Q;
-
-    public Vector2 MajorRadius;
-
-    public Vector3 MinorRadius;
-
-    public TorusKnot()
+    [SerializeField]
+    private int p;
+    public int P
     {
-        periodTime = 2 * Mathf.PI;
+        get { return p; }
+        set
+        {
+            p = value;
+            updateNextFrame = true;
+        }
     }
 
-    public override Vector3 GetPosition(float time)
+    [SerializeField]
+    private int q;
+    public int Q
+    {
+        get { return q; }
+        set
+        {
+            q = value;
+            updateNextFrame = true;
+        }
+    }
+
+    [SerializeField]
+    private Vector2 majorRadius;
+    public Vector2 MajorRadius
+    {
+        get { return majorRadius; }
+        set
+        {
+            majorRadius = value;
+            updateNextFrame = true;
+        }
+    }
+
+    [SerializeField]
+    private Vector3 minorRadius;
+    public Vector3 MinorRadius
+    {
+        get { return minorRadius; }
+        set
+        {
+            minorRadius = value;
+            updateNextFrame = true;
+        }
+    }
+
+    private void Awake()
+    {
+        periodTime = 2 * Mathf.PI;
+        enabled = false;
+    }
+
+    protected override Vector3 GetPosition(float time)
     {
         float minorRadScale = Mathf.Cos(Q * time);
 
@@ -31,22 +72,22 @@ public class TorusKnot : BaseKnot
     //public override Vector3 GetPosition(float time)
     //{
     //    float radiusScaled = MinorRadius * Mathf.Cos(Q * time) + MajorRadius;
-
+    //
     //    float x = radiusScaled * Mathf.Cos(P * time);
     //    float z = radiusScaled * Mathf.Sin(P * time);
     //    float y = -MinorRadius * Mathf.Sin(Q * time);
-
+    //
     //    return new Vector3(x, y, z);
     //}
 
-    public override void ConstructKnot()
+    protected override void ConstructKnot()
     {
         periodTime = GetPeriodTime();
 
         base.ConstructKnot();
     }
 
-    public override void UpdateKnot()
+    protected override void UpdateKnot()
     {
         periodTime = GetPeriodTime();
 

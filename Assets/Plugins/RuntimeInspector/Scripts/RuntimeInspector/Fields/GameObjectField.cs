@@ -9,7 +9,7 @@ namespace RuntimeInspectorNamespace
 {
 	public class GameObjectField : ExpandableInspectorField
 	{
-		protected override int Length { get { return components.Count + 4; } } // 4: active, name, tag, layer
+		protected override int Length { get { return components.Count + 1 /*+ 4*/; } } // 4: active, name, tag, layer -- show only active
 
 		private string currentTag = null;
 
@@ -94,22 +94,25 @@ namespace RuntimeInspectorNamespace
 				return;
 
 			CreateDrawer( typeof( bool ), "Is Active", isActiveGetter, isActiveSetter );
-			StringField nameField = CreateDrawer( typeof( string ), "Name", nameGetter, nameSetter ) as StringField;
-			StringField tagField = CreateDrawer( typeof( string ), "Tag", tagGetter, tagSetter ) as StringField;
-			CreateDrawerForVariable( layerProp, "Layer" );
 
-			for( int i = 0, j = 0; i < components.Count; i++ )
+			// Don't show game object properties
+
+			//StringField nameField = CreateDrawer( typeof( string ), "Name", nameGetter, nameSetter ) as StringField;
+			//StringField tagField = CreateDrawer( typeof( string ), "Tag", tagGetter, tagSetter ) as StringField;
+			//CreateDrawerForVariable( layerProp, "Layer" );
+
+			for ( int i = 0, j = 0; i < components.Count; i++ )
 			{
 				InspectorField componentDrawer = CreateDrawerForComponent( components[i] );
 				if( componentDrawer as ExpandableInspectorField && j < componentsExpandedStates.Count && componentsExpandedStates[j++] )
 					( (ExpandableInspectorField) componentDrawer ).IsExpanded = true;
 			}
 
-			if( nameField )
-				nameField.SetterMode = StringField.Mode.OnSubmit;
+			//if( nameField )
+			//	nameField.SetterMode = StringField.Mode.OnSubmit;
 
-			if( tagField )
-				tagField.SetterMode = StringField.Mode.OnSubmit;
+			//if( tagField )
+			//	tagField.SetterMode = StringField.Mode.OnSubmit;
 
 			if( Inspector.ShowAddComponentButton )
 				CreateExposedMethodButton( addComponentMethod, () => this, ( value ) => { } );

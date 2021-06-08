@@ -2,6 +2,13 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+
+public enum ZoomSpeedType
+{
+    Constant,
+    FasterWhenFurtherFromOrigin
+}
+
 /// <summary>
 /// Camera orbit manipulator.
 /// </summary>
@@ -17,9 +24,24 @@ public class OrbitManipulator : MonoBehaviour
     /// Zooming speed.
     /// </summary>
     [Range(1, 100)]
-    public float Speed = 30;
+    public float ZoomSpeed = 30;
 
-    private Vector3 previousPosition = Vector3.zero;
+    public ZoomSpeedType ZoomSpeedType;
+
+    [Range(1, 100)]
+    public float MoveSpeed = 1;
+
+    public Transform Gizmo;
+
+    private bool drawGizmo = false;
+
+    private bool lastDrawGizmo = false;
+
+    private int drawGizmoNumFrames = 0;
+
+    private Vector3 previousViewportPosition = Vector3.zero;
+
+    private Vector3 previousWorldPosition = Vector3.zero;
 
     private Vector3 rotationCenter = Vector3.zero;
 
@@ -40,6 +62,11 @@ public class OrbitManipulator : MonoBehaviour
             camera.nearClipPlane = 0.001f;
             camera.farClipPlane = 1000;
         }
+
+        if (Gizmo != null)
+        {
+            Gizmo.gameObject.SetActive(false);
+        }
     }
 
     private void Update()
@@ -48,11 +75,12 @@ public class OrbitManipulator : MonoBehaviour
         {
             return;
         }
-        
+
         // Mouse position update
-        if (Input.GetMouseButtonDown(1))
+        if (Input.GetMouseButtonDown(1) || Input.GetMouseButtonDown(2))
         {
-            previousPosition = Camera.main.ScreenToViewportPoint(Input.mousePosition);
+            previousViewportPosition = Camera.main.ScreenToViewportPoint(Input.mousePosition);
+            previousWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition + Vector3.forward);
         }
 
         // Disable controls during translation of camera to new rotation center
@@ -61,41 +89,71 @@ public class OrbitManipulator : MonoBehaviour
             return;
         }
 
-        // Zoom to center of rotation
-        var distanceFromRotationCenter = Vector3.Distance(transform.position, rotationCenter);
-        var nonlinearZoomScale = distanceFromRotationCenter / 2.0f;
-        if (nonlinearZoomScale < 1.0f)
+        drawGizmo = false;
+        if (drawGizmoNumFrames > 0)
         {
-            nonlinearZoomScale = 1.0f;
-        }
-        var zoomDistance = Speed * Time.unscaledDeltaTime * nonlinearZoomScale;
-        transform.Translate(new Vector3(0, 0, Input.mouseScrollDelta.y * zoomDistance));
-
-        // Rotation around center of rotation
-        if (Input.GetMouseButton(1))
-        {
-            var direction = previousPosition - Camera.main.ScreenToViewportPoint(Input.mousePosition);
-            // Rotate camera in certain direction
-            RotateAroundCenter(direction);
-            previousPosition = Camera.main.ScreenToViewportPoint(Input.mousePosition);
+            drawGizmo = true;
+            drawGizmoNumFrames--; 
         }
 
         // Set center of rotation
-        //if (Input.GetMouseButtonDown(2))
-        //{
-        //    if (!Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
-        //    {
-        //        return;
-        //    }
-        //    var meshCollider = hit.collider as MeshCollider;
-        //    if (meshCollider == null || meshCollider.sharedMesh == null)
-        //    {
-        //        return;
-        //    }
+        if (Input.GetMouseButton(2))
+        {
+            var direction = previousWorldPosition - Camera.main.ScreenToWorldPoint(Input.mousePosition + Vector3.forward);
 
-        //    // Focus camera on rotation center
-        //    ChangeRotationCenter(hit.point);
-        //}
+            // Focus camera on rotation center
+            rotationCenter = rotationCenter + direction * MoveSpeed;
+            RotateAroundCenter(Vector3.zero);
+            previousWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition + Vector3.forward);
+            drawGizmo = true;
+        }
+        else
+        {
+            // Rotation around center of rotation
+            if (Input.GetMouseButton(1))
+            {
+                var direction = previousViewportPosition - Camera.main.ScreenToViewportPoint(Input.mousePosition);
+
+                // Rotate camera in certain direction
+                RotateAroundCenter(direction);
+                previousViewportPosition = Camera.main.ScreenToViewportPoint(Input.mousePosition);
+                drawGizmo = true;
+            }
+
+            // Zoom to center of rotation
+            if (Mathf.Abs(Input.mouseScrollDelta.y) > 0)
+            {
+                float zoomScale = 10.0f;
+                if (ZoomSpeedType == ZoomSpeedType.FasterWhenFurtherFromOrigin)
+                {
+                    var distanceFromRotationCenter = Vector3.Distance(transform.position, rotationCenter);
+                    zoomScale = distanceFromRotationCenter / 2.0f;
+                    if (zoomScale < 1.0f)
+                    {
+                        zoomScale = 1.0f;
+                    }
+                }
+                var zoomDistance = ZoomSpeed * Time.unscaledDeltaTime * zoomScale;
+                transform.Translate(new Vector3(0, 0, Input.mouseScrollDelta.y * zoomDistance));
+
+                drawGizmoNumFrames = 180;
+                drawGizmo = true;
+            }
+        }
+
+        // Draw gizmo
+        if (Gizmo != null)
+        {
+            if (drawGizmo != lastDrawGizmo)
+            {
+                Gizmo.gameObject.SetActive(drawGizmo);
+                lastDrawGizmo = drawGizmo;
+            }
+            if (drawGizmo)
+            {
+                Gizmo.position = rotationCenter;
+            }
+        }
     }
 
     private void RotateAroundCenter(Vector3 direction)
@@ -113,7 +171,7 @@ public class OrbitManipulator : MonoBehaviour
         var newPosition = transform.position + deltaCenterPos;
         rotationCenter = newRotationCenter;
 
-        StartCoroutine(SmoothTranslation(newPosition));
+        //StartCoroutine(SmoothTranslation(newPosition));
     }
 
     private Vector3 CalculateStepVector(Vector3 currentPosition, Vector3 deltaPosition)
