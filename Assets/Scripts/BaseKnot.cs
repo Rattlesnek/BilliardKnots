@@ -90,7 +90,6 @@ public abstract class BaseKnot : MonoBehaviour
 
     protected virtual void ConstructKnot()
     {
-        Knot.IsLoop = false;
         RemoveNodes();
 
         float dtime = periodTime / NumOfNodes;
@@ -140,11 +139,12 @@ public abstract class BaseKnot : MonoBehaviour
 
             AddNode(currentPos, currentDir, currentNormal);
 
-        } while (timeNext < periodTime - dtime / 2);
+        } while (timeNext < periodTime + dtime / 2);
 
-        // Last node at the position of the first node
-        AddNode(Knot.nodes[0].Position, Knot.nodes[0].Direction, Knot.nodes[0].Up);
-        Knot.IsLoop = true;
+        if (FixKnotEnds)
+        {
+            ConnectKnotEnds(Knot.nodes[0].Up, currentNormal, currentTangent);
+        }
     }
 
     protected virtual void UpdateKnot()

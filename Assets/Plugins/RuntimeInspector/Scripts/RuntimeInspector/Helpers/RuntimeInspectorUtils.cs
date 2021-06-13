@@ -144,7 +144,8 @@ namespace RuntimeInspectorNamespace
 				return string.Concat( "None (", defaultType.Name, ")" );
 			}
 
-			return ( obj is Object ) ? string.Concat( ( (Object) obj ).name, " (", obj.GetType().Name, ")" ) : obj.GetType().Name;
+			// return (obj is Object) ? string.Concat( ( (Object) obj ).name, " (", obj.GetType().Name, ")" ) : obj.GetType().Name;
+			return ( obj is Object ) ? ((Object)obj).name : obj.GetType().Name;
 		}
 
 		public static Texture GetTexture( this Object obj )

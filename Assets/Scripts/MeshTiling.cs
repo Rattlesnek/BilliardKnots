@@ -43,8 +43,6 @@ public class MeshTiling : MonoBehaviour
         }
     }
 
-    private GameObject MeshPrefab;
-
     [SerializeField]
     [Tooltip("Material to apply on the bent mesh.")]
     private Material material;
@@ -57,9 +55,6 @@ public class MeshTiling : MonoBehaviour
             toUpdate = true;
         }
     }
-
-    // [Tooltip("Physic material to apply on the bent mesh.")]
-    private PhysicMaterial physicMaterial = null;
 
     [SerializeField]
     [Tooltip("Translation to apply on the mesh before bending it.")]
@@ -99,9 +94,6 @@ public class MeshTiling : MonoBehaviour
             toUpdate = true;
         }
     }
-
-    // [Tooltip("If true, a mesh collider will be generated.")]
-    private bool generateCollider = false;
 
     // [Tooltip("If true, the mesh will be bent on play mode. If false, the bent mesh will be kept from the editor mode, allowing lighting baking.")]
     private bool updateInPlayMode = true;
@@ -204,15 +196,13 @@ public class MeshTiling : MonoBehaviour
             {
                 var go = FindOrCreate("segment " + i++ + " mesh");
                 go.GetComponent<MeshBender>().SetInterval(curve);
-                go.GetComponent<MeshCollider>().enabled = generateCollider;
                 used.Add(go);
             }
         }
         else
-        {
+        {   
             var go = FindOrCreate("segment 1 mesh");
             go.GetComponent<MeshBender>().SetInterval(spline, 0);
-            go.GetComponent<MeshCollider>().enabled = generateCollider;
             used.Add(go);
         }
 
@@ -235,8 +225,7 @@ public class MeshTiling : MonoBehaviour
                 generated,
                 typeof(MeshFilter),
                 typeof(MeshRenderer),
-                typeof(MeshBender),
-                typeof(MeshCollider));
+                typeof(MeshBender));
             res.isStatic = !updateInPlayMode;
         }
         else
@@ -244,7 +233,6 @@ public class MeshTiling : MonoBehaviour
             res = childTransform.gameObject;
         }
         res.GetComponent<MeshRenderer>().material = Material;
-        res.GetComponent<MeshCollider>().material = physicMaterial;
         MeshBender mb = res.GetComponent<MeshBender>();
         mb.Source = SourceMesh.Build(Mesh)
             .Translate(Translation)

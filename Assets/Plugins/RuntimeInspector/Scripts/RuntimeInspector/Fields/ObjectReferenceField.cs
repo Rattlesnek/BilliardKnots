@@ -31,7 +31,7 @@ namespace RuntimeInspectorNamespace
 		{
 			base.Initialize();
 
-			input.PointerClick += ShowReferencePicker;
+			input.PointerClick += OnPointerClick;
 
 			if( inspectReferenceButton != null )
 			{
@@ -44,6 +44,24 @@ namespace RuntimeInspectorNamespace
 		{
 			return typeof( Object ).IsAssignableFrom( type );
 		}
+
+		// TODO
+		private void OnPointerClick(PointerEventData eventData)
+        {
+            if (BoundVariableType == typeof(Mesh))
+            {
+				ShowMeshFileExplorer(eventData);
+            }
+            else
+            {
+				ShowReferencePicker(eventData);
+            }
+        }
+
+		private void ShowMeshFileExplorer(PointerEventData eventData)
+        {
+			
+        }
 
 		private void ShowReferencePicker( PointerEventData eventData )
 		{
