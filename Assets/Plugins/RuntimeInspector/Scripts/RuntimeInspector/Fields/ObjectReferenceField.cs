@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Reflection;
+using System.IO;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
+using SFB;
+
 
 namespace RuntimeInspectorNamespace
 {
@@ -58,10 +61,24 @@ namespace RuntimeInspectorNamespace
             }
         }
 
+		private GameObject CreateMeshObject(Mesh mesh, string objectName)
+        {
+			var go = new GameObject(objectName);
+			go.AddComponent<MeshFilter>().mesh = mesh;
+			go.AddComponent<MeshRenderer>().material = new Material(Shader.Find("Diffuse"));
+			return go;
+		}
+
 		private void ShowMeshFileExplorer(PointerEventData eventData)
         {
-			
-        }
+			var paths = StandaloneFileBrowser.OpenFilePanel("Open Mesh OBJ", "", "obj", false);
+			if (paths.Length > 0)
+			{
+				var mesh = FastObjImporter.Instance.ImportFile(paths[0]);
+				mesh.name = Path.GetFileName(paths[0]);
+				OnReferenceChanged(mesh);
+			}
+		}
 
 		private void ShowReferencePicker( PointerEventData eventData )
 		{

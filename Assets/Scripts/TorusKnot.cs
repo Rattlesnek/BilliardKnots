@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
-using SplineMesh;
 
+[ExecuteInEditMode]
 public class TorusKnot : BaseKnot
 {
     [SerializeField]
@@ -16,13 +16,25 @@ public class TorusKnot : BaseKnot
     }
 
     [SerializeField]
-    private int q;
-    public int Q
+    private int n;
+    public int N
     {
-        get { return q; }
+        get { return n; }
         set
         {
-            q = value;
+            n = value;
+            updateNextFrame = true;
+        }
+    }
+
+    [SerializeField]
+    private float phase;
+    public float Phase
+    {
+        get { return phase; }
+        set
+        {
+            phase = value;
             updateNextFrame = true;
         }
     }
@@ -51,66 +63,31 @@ public class TorusKnot : BaseKnot
         }
     }
 
-    private void Awake()
-    {
-        periodTime = 2 * Mathf.PI;
-        enabled = false;
-    }
-
     protected override Vector3 GetPosition(float time)
     {
-        float minorRadScale = Mathf.Cos(Q * time);
-
-        // x and y are swapped for better looking default knot
-        float x = (MinorRadius.x * minorRadScale + MajorRadius.x) * Mathf.Cos(P * time);
-        float z = (MinorRadius.y * minorRadScale + MajorRadius.y) * Mathf.Sin(P * time);
-        float y = - MinorRadius.z * Mathf.Sin(Q * time);
-
-        return new Vector3(x, y, z);
+        return KnotUtils.GetLissajousToricPosition(time, MajorRadius, MinorRadius, P, P, N, Phase);
     }
 
-    //public override Vector3 GetPosition(float time)
-    //{
-    //    float radiusScaled = MinorRadius * Mathf.Cos(Q * time) + MajorRadius;
-    //
-    //    float x = radiusScaled * Mathf.Cos(P * time);
-    //    float z = radiusScaled * Mathf.Sin(P * time);
-    //    float y = -MinorRadius * Mathf.Sin(Q * time);
-    //
-    //    return new Vector3(x, y, z);
-    //}
-
-    protected override void ConstructKnot()
+    protected override float GetPeriodTime()
     {
-        periodTime = GetPeriodTime();
-
-        base.ConstructKnot();
-    }
-
-    protected override void UpdateKnot()
-    {
-        periodTime = GetPeriodTime();
-
-        base.UpdateKnot();
-    }
-
-    private float GetPeriodTime()
-    {
-        if (P * Q == 0)
+        if (P * N == 0)
         {
             return 2 * Mathf.PI;
         }
-        return 2 * Mathf.PI / GCD(P, Q);
+        return 2 * Mathf.PI / KnotUtils.GCD(P, N);
     }
 
-    private static int LCM(int a, int b)
-    {
-        return a * b / GCD(a, b);
-    }
-
-    private static int GCD(int a, int b)
-    {
-        if (a % b == 0) return b;
-        return GCD(b, a % b);
-    }
+    //protected override Vector3 GetPosition(float time)
+    //{
+    //    float minorRadScale = Mathf.Cos(Q * time);
+    //
+    //    // x and y are swapped for better looking default knot
+    //    float x = (MinorRadius.x * minorRadScale + MajorRadius.x) * Mathf.Cos(P * time);
+    //    float z = (MinorRadius.y * minorRadScale + MajorRadius.y) * Mathf.Sin(P * time);
+    //    float y = - MinorRadius.z * Mathf.Sin(Q * time);
+    //
+    //    return new Vector3(x, y, z);
+    //}
 }
+
+

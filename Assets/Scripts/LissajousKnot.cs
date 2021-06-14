@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
-using SplineMesh;
 
+[ExecuteInEditMode]
 public class LissajousKnot : BaseKnot
 {
     [SerializeField]
@@ -39,18 +39,17 @@ public class LissajousKnot : BaseKnot
         }
     }
 
-    private void Awake()
-    {
-        periodTime = 2 * Mathf.PI;
-        enabled = false;
-    }
-
     protected override Vector3 GetPosition(float time)
     {
         var freq = new Vector3(Frequency.x, Frequency.y, Frequency.z);
         var phi = Phase * Mathf.Deg2Rad;
 
-        return Vector3.Scale(Amplitude, ApplyFunc(freq * time + phi, Mathf.Cos));
-    }    
+        return Vector3.Scale(Amplitude, KnotUtils.ApplyFunc(freq * time + phi, Mathf.Cos));
+    }
+
+    protected override float GetPeriodTime()
+    {
+        return 2 * Mathf.PI;
+    }
 }
 

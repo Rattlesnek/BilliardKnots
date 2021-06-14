@@ -1,7 +1,11 @@
 ﻿using UnityEngine;
 using SplineMesh;
-using UnityEditor;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
+[ExecuteInEditMode]
 public abstract class BaseKnot : MonoBehaviour
 {
     private Spline knot;
@@ -50,6 +54,15 @@ public abstract class BaseKnot : MonoBehaviour
 
     protected abstract Vector3 GetPosition(float time);
 
+    protected abstract float GetPeriodTime();
+
+
+    protected virtual void Awake()
+    {
+        periodTime = GetPeriodTime();
+        enabled = false;
+    }
+
     protected virtual void Start()
     {
         oldNumOfNodes = NumOfNodes;
@@ -76,22 +89,25 @@ public abstract class BaseKnot : MonoBehaviour
 
     protected virtual void OnEnable()
     {
+        periodTime = GetPeriodTime();
         ConstructKnot();
     }
 
-    //protected virtual void OnValidate()
-    //{
-    //    if (!EditorApplication.isPlayingOrWillChangePlaymode)
-    //    {
-    //        updateNextFrame = true;
-    //        Update();
-    //    }
-    //}
+#if UNITY_EDITOR
+    protected virtual void OnValidate()
+    {
+        if (!EditorApplication.isPlayingOrWillChangePlaymode)
+        {
+            constructNextFrame = true;
+        }
+    }
+#endif
 
     protected virtual void ConstructKnot()
     {
         RemoveNodes();
 
+        periodTime = GetPeriodTime();
         float dtime = periodTime / NumOfNodes;
 
         // Knot construction
@@ -102,9 +118,9 @@ public abstract class BaseKnot : MonoBehaviour
         var currentPos = GetPosition(0.0f);
         float timeNext = dtime;
         var nextPos = GetPosition(timeNext);
-        var (currentDir, currentTangent) = GetSmoothDirectionAndTangent(previousPos, currentPos, nextPos, Curvature);
-        var currentNormal = GetFirstNormal(currentTangent);
-        currentNormal = RotateAroundAxis(currentNormal, currentTangent, Mathf.Deg2Rad * RMFAngle);
+        var (currentDir, currentTangent) = KnotUtils.GetSmoothDirectionAndTangent(previousPos, currentPos, nextPos, Curvature);
+        var currentNormal = KnotUtils.GetFirstNormal(currentTangent);
+        currentNormal = KnotUtils.RotateAroundAxis(currentNormal, currentTangent, Mathf.Deg2Rad * RMFAngle);
 
         Knot.nodes[0].Position = currentPos;
         Knot.nodes[0].Direction = currentDir;
@@ -118,8 +134,8 @@ public abstract class BaseKnot : MonoBehaviour
         // Second node
         timeNext += dtime;
         nextPos = GetPosition(timeNext);
-        (currentDir, currentTangent) = GetSmoothDirectionAndTangent(previousPos, currentPos, nextPos, Curvature);
-        currentNormal = GetNormalRMF(previousPos, currentPos, previousTangent, currentTangent, previousNormal);
+        (currentDir, currentTangent) = KnotUtils.GetSmoothDirectionAndTangent(previousPos, currentPos, nextPos, Curvature);
+        currentNormal = KnotUtils.GetNormalRMF(previousPos, currentPos, previousTangent, currentTangent, previousNormal);
 
         Knot.nodes[1].Position = currentPos;
         Knot.nodes[1].Direction = currentDir;
@@ -134,8 +150,8 @@ public abstract class BaseKnot : MonoBehaviour
 
             timeNext += dtime;
             nextPos = GetPosition(timeNext);
-            (currentDir, currentTangent) = GetSmoothDirectionAndTangent(previousPos, currentPos, nextPos, Curvature);
-            currentNormal = GetNormalRMF(previousPos, currentPos, previousTangent, currentTangent, previousNormal);
+            (currentDir, currentTangent) = KnotUtils.GetSmoothDirectionAndTangent(previousPos, currentPos, nextPos, Curvature);
+            currentNormal = KnotUtils.GetNormalRMF(previousPos, currentPos, previousTangent, currentTangent, previousNormal);
 
             AddNode(currentPos, currentDir, currentNormal);
 
@@ -149,15 +165,16 @@ public abstract class BaseKnot : MonoBehaviour
 
     protected virtual void UpdateKnot()
     {
+        periodTime = GetPeriodTime();
         float dtime = periodTime / (Knot.nodes.Count - 1);
 
         // Knot recalculation
         var previousPos = GetPosition(-dtime);
         var currentPos = GetPosition(0.0f);
         var nextPos = GetPosition(dtime);
-        var (currentDir, currentTangent) = GetSmoothDirectionAndTangent(previousPos, currentPos, nextPos, Curvature);
-        var currentNormal = GetFirstNormal(currentTangent);
-        currentNormal = RotateAroundAxis(currentNormal, currentTangent, Mathf.Deg2Rad * RMFAngle);
+        var (currentDir, currentTangent) = KnotUtils.GetSmoothDirectionAndTangent(previousPos, currentPos, nextPos, Curvature);
+        var currentNormal = KnotUtils.GetFirstNormal(currentTangent);
+        currentNormal = KnotUtils.RotateAroundAxis(currentNormal, currentTangent, Mathf.Deg2Rad * RMFAngle);
 
         Knot.nodes[0].Position = currentPos;
         Knot.nodes[0].Direction = currentDir;
@@ -172,8 +189,8 @@ public abstract class BaseKnot : MonoBehaviour
         for (int i = 1; i < Knot.nodes.Count; i++, timeNext += dtime)
         {
             nextPos = GetPosition(timeNext);
-            (currentDir, currentTangent) = GetSmoothDirectionAndTangent(previousPos, currentPos, nextPos, Curvature);
-            currentNormal = GetNormalRMF(previousPos, currentPos, previousTangent, currentTangent, previousNormal);
+            (currentDir, currentTangent) = KnotUtils.GetSmoothDirectionAndTangent(previousPos, currentPos, nextPos, Curvature);
+            currentNormal = KnotUtils.GetNormalRMF(previousPos, currentPos, previousTangent, currentTangent, previousNormal);
 
             Knot.nodes[i].Position = currentPos;
             Knot.nodes[i].Direction = currentDir;
@@ -210,7 +227,7 @@ public abstract class BaseKnot : MonoBehaviour
             for (int i = 0; i < Knot.nodes.Count; i++)
             {
                 var node = Knot.nodes[i];
-                node.Up = RotateAroundAxis(node.Up, (node.Direction - node.Position).normalized, totalAngle / 2 - i * angle);
+                node.Up = KnotUtils.RotateAroundAxis(node.Up, (node.Direction - node.Position).normalized, totalAngle / 2 - i * angle);
             }
         }
     }
@@ -228,104 +245,5 @@ public abstract class BaseKnot : MonoBehaviour
         {
             Knot.RemoveNode(Knot.nodes[i]);
         }
-    }
-
-    protected static Vector3 RotateAroundAxis(Vector3 vector, Vector3 normal, float angle)
-    {
-        var scaledNormal = normal * Mathf.Sin(angle / 2);
-        var rotation = new Quaternion(scaledNormal.x, scaledNormal.y, scaledNormal.z, Mathf.Cos(angle / 2));
-        return rotation * vector;
-    }
-
-    protected static Vector3 GetFirstNormal(Vector3 tangent)
-    {
-        // dot(normal, tangent) == 0; nx*tx + ny*ty + nz*tz == 0
-        // length(normal) == 1; nx^2 + ny^2 + nz^2 == 1
-        // length(tangent) == 1
-        var absTang = ApplyFunc(tangent, Mathf.Abs);
-        float x = 0.0f;
-        float y = 0.0f;
-        float z = 0.0f;
-        if (absTang.x >= absTang.y && absTang.x >= absTang.z) // X
-        {
-            // tangent.x is max
-            // normal.y == 0
-            z = Mathf.Sqrt(1.0f / (1.0f + Mathf.Pow(tangent.z / tangent.x, 2)));
-            x = -z * tangent.z / tangent.x;
-        }
-        else if (absTang.y >= absTang.x && absTang.y >= absTang.z) // Y
-        {
-            // tangent.y is max
-            // normal.z == 0
-            x = Mathf.Sqrt(1.0f / (1.0f + Mathf.Pow(tangent.x / tangent.y, 2)));
-            y = -x * tangent.x / tangent.y;
-        }
-        else // Z
-        {
-            // tangent.z is max
-            // normal.x == 0
-            y = Mathf.Sqrt(1.0f / (1.0f + Mathf.Pow(tangent.y / tangent.z, 2)));
-            z = -y * tangent.y / tangent.z;
-        }
-
-        return new Vector3(x, y, z);
-    }
-
-    /// <summary>
-    /// Ref: https://seth.rocks/projects/doublereflection/
-    /// </summary>
-    protected static Vector3 GetNormalRMF(
-        Vector3 previousPos, 
-        Vector3 currentPos, 
-        Vector3 previousTangent, 
-        Vector3 currentTangent, 
-        Vector3 previousNormal)
-    {
-        var v1 = (currentPos - previousPos).normalized;
-        var v2 = (currentTangent - Vector3.Reflect(previousTangent, v1)).normalized;
-        var normal = Vector3.Reflect(Vector3.Reflect(previousNormal, v1), v2);
-        return normal;
-    }
-
-    protected static (Vector3, Vector3) GetSmoothDirectionAndTangent(
-        Vector3 previousPos, 
-        Vector3 currentPos, 
-        Vector3 nextPos, 
-        float curvature)
-    {
-        var dir = Vector3.zero;
-        float averageMagnitude = 0;
-
-        // For the direction, we need to compute a smooth vector.
-        // Orientation is obtained by substracting the vectors to the previous and next way points,
-        // which give an acceptable tangent in most situations.
-        // Then we apply a part of the average magnitude of these two vectors, according to the smoothness we want.
-
-        // Previous
-        var toPrevious = currentPos - previousPos;
-        averageMagnitude += toPrevious.magnitude;
-        dir += toPrevious.normalized;
-
-        // Next
-        var toNext = currentPos - nextPos;
-        averageMagnitude += toNext.magnitude;
-        dir -= toNext.normalized;
-
-        averageMagnitude *= 0.5f;
-        // This constant should vary between 0 and 0.5, and allows to add more or less smoothness.
-        var dirNorm = dir.normalized;
-        dir = dirNorm * averageMagnitude * curvature;
-        
-        return (dir + currentPos, dirNorm);
-    }
-
-    protected delegate float MathFunc(float operand);
-
-    protected static Vector3 ApplyFunc(Vector3 input, MathFunc mathFunc)
-    {
-        return new Vector3(
-            mathFunc(input.x),
-            mathFunc(input.y),
-            mathFunc(input.z));
     }
 }

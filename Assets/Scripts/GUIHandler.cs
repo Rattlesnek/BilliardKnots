@@ -41,16 +41,22 @@ public class GUIHandler : MonoBehaviour
     {
         var lissajous = KnotTransform.GetComponent<LissajousKnot>();
         var torus = KnotTransform.GetComponent<TorusKnot>();
-        
+        var lissajousToric = KnotTransform.GetComponent<LissajousToricKnot>();
+
+        if (!HiddenComponents.Contains(lissajous)) HiddenComponents.Add(lissajous);
+        if (!HiddenComponents.Contains(torus)) HiddenComponents.Add(torus);
+        if (!HiddenComponents.Contains(lissajousToric)) HiddenComponents.Add(lissajousToric);
+
         switch (args.KnotType)
         {
             case KnotType.Lissajous:
                 HiddenComponents.Remove(lissajous);
-                HiddenComponents.Add(torus);
                 break;
             case KnotType.Torus:
                 HiddenComponents.Remove(torus);
-                HiddenComponents.Add(lissajous);
+                break;
+            case KnotType.LissajousToric:
+                HiddenComponents.Remove(lissajousToric);
                 break;
             default:
                 break;

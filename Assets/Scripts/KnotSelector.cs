@@ -29,14 +29,17 @@ public class KnotSelector : MonoBehaviour
 
     public event KnotTypeChangedEvent OnKnotTypeChanged;
 
-    private LissajousKnot lissajousKnot;
+    private LissajousKnot lissajous;
 
-    private TorusKnot torusKnot;
+    private TorusKnot torus;
+
+    private LissajousToricKnot lissajousToric;
 
     private void Awake()
     {
-        lissajousKnot = GetComponent<LissajousKnot>();
-        torusKnot = GetComponent<TorusKnot>();
+        lissajous = GetComponent<LissajousKnot>();
+        torus = GetComponent<TorusKnot>();
+        lissajousToric = GetComponent<LissajousToricKnot>();
     }
 
     private void Start()
@@ -46,16 +49,20 @@ public class KnotSelector : MonoBehaviour
 
     private void ExecuteOnKnotTypeChanged()
     {
-        lissajousKnot.enabled = false;
-        torusKnot.enabled = false;
+        lissajous.enabled = false;
+        torus.enabled = false;
+        lissajousToric.enabled = false;
 
         switch (KnotType)
         {
             case KnotType.Lissajous:
-                lissajousKnot.enabled = true;
+                lissajous.enabled = true;
                 break;
             case KnotType.Torus:
-                torusKnot.enabled = true;
+                torus.enabled = true;
+                break;
+            case KnotType.LissajousToric:
+                lissajousToric.enabled = true;
                 break;
             default:
                 break;

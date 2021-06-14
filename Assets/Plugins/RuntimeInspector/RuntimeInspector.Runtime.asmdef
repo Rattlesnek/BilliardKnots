@@ -1,3 +1,17 @@
-﻿{
-	"name": "RuntimeInspector.Runtime"
+{
+    "name": "RuntimeInspector.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "GUID:913dc7eb326d2da499afbaec4a5be9d9",
+        "GUID:7e021993b9388264dbf182f0bd613d1d"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
