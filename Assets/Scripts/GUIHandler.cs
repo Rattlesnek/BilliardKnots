@@ -5,21 +5,13 @@ using RuntimeInspectorNamespace;
 
 public class GUIHandler : MonoBehaviour
 {
-    public List<Transform> HiddenObjects = new List<Transform>();
+    public List<string> HiddenObjects = new List<string>();
 
     public List<Component> HiddenComponents = new List<Component>();
 
-    [SerializeField]
-    private List<string> hiddenVariables = new List<string>();
-    public List<string> HiddenVariables
-    {
-        get { return hiddenVariables; }
-        set
-        {
-            hiddenVariables = value;
-            RuntimeInspector.Regenerate();
-        }
-    }
+    public HashSet<string> HiddenVariables = new HashSet<string>();
+
+    public bool HiddenVariablesChanged = false;
     
     public RuntimeHierarchy RuntimeHierarchy;
 
@@ -27,7 +19,7 @@ public class GUIHandler : MonoBehaviour
 
     public Transform KnotTransform;
 
-    public void Awake()
+    private void Awake()
     {
         var knotSelector = KnotTransform.GetComponent<KnotSelector>();
         knotSelector.OnKnotTypeChanged += OnKnotTypeChanged;
@@ -35,6 +27,16 @@ public class GUIHandler : MonoBehaviour
         RuntimeHierarchy.GameObjectFilter = GameObjectFilter;
         RuntimeInspector.ComponentFilter = ComponentFilter;
         RuntimeInspector.VariableFilter = VariableFilter;
+    }
+
+    private void Update()
+    {
+        if (HiddenVariablesChanged)
+        {
+            RuntimeInspector.Refresh();
+            RuntimeInspector.Regenerate();
+            HiddenVariablesChanged = false;
+        }
     }
 
     private void OnKnotTypeChanged(KnotSelectorEventArgs args)
@@ -70,7 +72,7 @@ public class GUIHandler : MonoBehaviour
     {
         do
         {
-            if (HiddenObjects.Contains(transform))
+            if (HiddenObjects.Exists((objectName) => objectName == transform.name))
             {
                 return false;
             }

@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 using SFB;
-
+using System.Collections.Generic;
 
 namespace RuntimeInspectorNamespace
 {
@@ -51,11 +51,32 @@ namespace RuntimeInspectorNamespace
 		// TODO
 		private void OnPointerClick(PointerEventData eventData)
         {
-            if (BoundVariableType == typeof(Mesh))
+			if (BoundVariableType == typeof(Mesh))
             {
 				ShowMeshFileExplorer(eventData);
             }
-            else
+            else if (BoundVariableType == typeof(Material))
+            {
+				var materialShaderNames = new List<string>();
+
+				var matShaderName = (Value as Material).shader.name;
+				if (matShaderName == "Skybox/Cubemap" || matShaderName == "Skybox/Panoramic")
+                {
+					materialShaderNames.Add("Skybox/Cubemap");
+					materialShaderNames.Add("Skybox/Panoramic");
+				}
+				else
+                {
+					materialShaderNames.Add(matShaderName);
+                }				
+
+				ShowMaterialReferencePicker(eventData, materialShaderNames);
+			}
+			else if (BoundVariableType.BaseType == typeof(MonoBehaviour)) // Is script?
+			{
+				InspectReference(eventData);
+			}
+			else
             {
 				ShowReferencePicker(eventData);
             }
@@ -78,6 +99,31 @@ namespace RuntimeInspectorNamespace
 				mesh.name = Path.GetFileName(paths[0]);
 				OnReferenceChanged(mesh);
 			}
+		}
+
+		private void ShowMaterialReferencePicker(PointerEventData eventData, List<string> materialShaderName)
+        {
+			Object[] allReferences = Resources.FindObjectsOfTypeAll(BoundVariableType);
+
+			List<Object> similarShaderObjects = new List<Object>(); 
+			foreach (var reference in allReferences)
+            {
+				var material = (reference as Material);
+				if (materialShaderName.Contains(material.shader.name))
+                {
+					if (!similarShaderObjects.Exists((obj) => (obj as Material).name == material.name))
+                    {
+						similarShaderObjects.Add(reference);
+					}
+                }
+            }
+
+			ObjectReferencePicker.Instance.Skin = Inspector.Skin;
+			ObjectReferencePicker.Instance.Show(
+				(reference) => OnReferenceChanged((Object)reference), null,
+				(reference) => (Object)reference ? ((Object)reference).name : "None",
+				(reference) => reference.GetNameWithType(),
+				similarShaderObjects.ToArray(), (Object)Value, true, "Select " + BoundVariableType.Name, Inspector.Canvas);
 		}
 
 		private void ShowReferencePicker( PointerEventData eventData )

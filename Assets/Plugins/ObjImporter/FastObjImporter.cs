@@ -66,6 +66,7 @@ public sealed class FastObjImporter
         }
 
         Mesh mesh = new Mesh();
+        mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
 
         mesh.vertices = newVerts;
         mesh.uv = newUVs;

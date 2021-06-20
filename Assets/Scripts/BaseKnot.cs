@@ -18,32 +18,33 @@ public abstract class BaseKnot : MonoBehaviour
         }
     }
 
-    [Range(40, 150)]
-    public int NumOfNodes = 60;
+    [Range(40, 200)]
+    public int NumOfNodes = 80;
 
     private int oldNumOfNodes;
 
-    [Range(0, 1f)]
+    [Range(0.01f, 1f)]
     public float Curvature = 0.3f;
 
     private float oldCurvature;
 
-    [Range(0, 360f)]
     public float RMFAngle = 0f;
 
     private float oldRMFAngle;
 
-    [SerializeField]
+    // Don't show to user
+    //[SerializeField]
     private bool fixKnotEnds = true;
-    public bool FixKnotEnds
-    {
-        get { return fixKnotEnds; }
-        set
-        {
-            fixKnotEnds = value;
-            updateNextFrame = true;
-        }
-    }
+    // Don't show to user
+    //public bool FixKnotEnds
+    //{
+    //    get { return fixKnotEnds; }
+    //    set
+    //    {
+    //        fixKnotEnds = value;
+    //        updateNextFrame = true;
+    //    }
+    //}
 
     protected float periodTime;
 
@@ -157,7 +158,7 @@ public abstract class BaseKnot : MonoBehaviour
 
         } while (timeNext < periodTime + dtime / 2);
 
-        if (FixKnotEnds)
+        if (fixKnotEnds)
         {
             ConnectKnotEnds(Knot.nodes[0].Up, currentNormal, currentTangent);
         }
@@ -202,7 +203,7 @@ public abstract class BaseKnot : MonoBehaviour
             currentPos = nextPos;
         }
 
-        if (FixKnotEnds)
+        if (fixKnotEnds)
         {
             ConnectKnotEnds(Knot.nodes[0].Up, currentNormal, currentTangent);
         }

@@ -19,17 +19,28 @@ public class InputFieldDragListener : MonoBehaviour, IBeginDragHandler, IDragHan
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        initialValue = float.Parse(inputField.text);
-        inputField.Select();
+        if (eventData.button == PointerEventData.InputButton.Left)
+        {
+            initialValue = float.Parse(inputField.text);
+            inputField.Select();
+        }
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        Vector2 delta = eventData.position - eventData.pressPosition;
-        float finalValue = initialValue + delta.x + delta.y;
-        if (inputField.contentType == InputField.ContentType.DecimalNumber)
-            inputField.text = finalValue.ToString();
-        else
-            inputField.text = ((int)finalValue).ToString();
+        if (eventData.button == PointerEventData.InputButton.Left)
+        {
+            Vector2 delta = eventData.position - eventData.pressPosition;
+            if (inputField.contentType == InputField.ContentType.DecimalNumber)
+            {
+                float finalValue = initialValue + delta.x;
+                inputField.text = finalValue.ToString();
+            }
+            else
+            {
+                float finalValue = initialValue + delta.x * 0.1f;
+                inputField.text = ((int)finalValue).ToString();
+            }
+        }
     }
 }

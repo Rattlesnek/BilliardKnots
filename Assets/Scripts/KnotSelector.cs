@@ -47,6 +47,11 @@ public class KnotSelector : MonoBehaviour
         ExecuteOnKnotTypeChanged();
     }
 
+    private void OnEnable()
+    {
+        ExecuteOnKnotTypeChanged();
+    }
+
     private void ExecuteOnKnotTypeChanged()
     {
         lissajous.enabled = false;

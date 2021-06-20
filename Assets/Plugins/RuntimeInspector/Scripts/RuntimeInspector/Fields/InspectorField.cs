@@ -486,8 +486,8 @@ namespace RuntimeInspectorNamespace
 			InspectorField variableDrawer = Inspector.CreateDrawerForType( component.GetType(), drawArea, Depth + 1, false );
 			if( variableDrawer != null )
 			{
-				if( variableName == null )
-					variableName = component.GetType().Name + " component";
+				if (variableName == null)
+					variableName = component.GetType().Name; // + " component";
 
 				variableDrawer.BindTo( component.GetType(), string.Empty, () => component, ( value ) => { } );
 				variableDrawer.NameRaw = variableName;

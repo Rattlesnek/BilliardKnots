@@ -70,6 +70,18 @@ MonoBehaviour:
     - bodyPosition
     - bodyRotation
     - playbackTime
+  - m_type: MeshTiling
+    m_variables:
+    - Material
+  - m_type: OrbitManipulator
+    m_variables:
+    - Gizmo
+  - m_type: MaterialSettings
+    m_variables:
+    - Material
+  - m_type: ReflectionProbesCamera
+    m_variables:
+    - '*'
   m_exposedVariables:
   - m_type: Transform
     m_variables:

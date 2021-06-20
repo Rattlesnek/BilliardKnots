@@ -45,6 +45,8 @@ public class OrbitManipulator : MonoBehaviour
 
     private Vector3 rotationCenter = Vector3.zero;
 
+    private float maxZoomDistance = 5000f;
+
     private bool isControlDisabled = false;
 
     /// <summary>
@@ -60,7 +62,7 @@ public class OrbitManipulator : MonoBehaviour
         foreach (var camera in Camera.allCameras)
         {
             camera.nearClipPlane = 0.001f;
-            camera.farClipPlane = 1000;
+            camera.farClipPlane = 2000;
         }
 
         if (Gizmo != null)
@@ -123,20 +125,25 @@ public class OrbitManipulator : MonoBehaviour
             // Zoom to center of rotation
             if (Mathf.Abs(Input.mouseScrollDelta.y) > 0)
             {
+                var distanceFromRotationCenter = Vector3.Distance(transform.position, rotationCenter);
                 float zoomScale = 10.0f;
                 if (ZoomSpeedType == ZoomSpeedType.FasterWhenFurtherFromOrigin)
                 {
-                    var distanceFromRotationCenter = Vector3.Distance(transform.position, rotationCenter);
                     zoomScale = distanceFromRotationCenter / 2.0f;
                     if (zoomScale < 1.0f)
                     {
                         zoomScale = 1.0f;
                     }
                 }
-                var zoomDistance = ZoomSpeed * Time.unscaledDeltaTime * zoomScale;
-                transform.Translate(new Vector3(0, 0, Input.mouseScrollDelta.y * zoomDistance));
+                var zoomDistance = Input.mouseScrollDelta.y * Time.unscaledDeltaTime * zoomScale * ZoomSpeed;
+                // Zoom destination greater than 0 || Zoom destination smaller than maxZoomDistance
+                if (distanceFromRotationCenter - zoomDistance > 1 && distanceFromRotationCenter - zoomDistance < maxZoomDistance)
+                {
+                    transform.Translate(new Vector3(0, 0, zoomDistance));
+                }
+                
 
-                drawGizmoNumFrames = 180;
+                drawGizmoNumFrames = 60;
                 drawGizmo = true;
             }
         }
